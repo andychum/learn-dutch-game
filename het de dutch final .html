@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dutch de/het Quiz</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --orange:#ff6f00; /* Dutch-like orange */
+      --dark:#4a2f00;
+      --bg:#fff7ef;
+      --card:#fff;
+      --accent:#ff8a33;
+      --correct:#2ecc71;
+      --wrong:#e74c3c;
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#fff);color:#222;display:flex;align-items:center;justify-content:center;height:100vh;padding:20px;}
+    .app{
+      width:100%;
+      max-width:900px;
+      background:var(--card);
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+      overflow:hidden;
+    }
+    header{
+      background:linear-gradient(90deg,var(--orange),var(--accent));
+      color:white;padding:20px 24px;
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    header h1{margin:0;font-size:20px;letter-spacing:0.6px;}
+    header small{opacity:0.95}
+    .content{padding:28px;}
+    .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+    .start-card{padding:40px 20px;}
+    .start-btn{
+      background:white;border:0;color:var(--orange);padding:12px 22px;border-radius:8px;font-weight:700;font-size:16px;cursor:pointer;margin-top:18px;
+      box-shadow:0 6px 16px rgba(255,111,0,0.16);
+    }
+    .info{margin-top:12px;color:#333;opacity:0.95;line-height:1.5}
+    .quiz{
+      display:none;
+    }
+    .question-card{
+      display:flex;gap:24px;align-items:center;justify-content:space-between;
+      padding:18px;border-radius:10px;background:linear-gradient(180deg,#fff,#fffef8);border:1px solid rgba(0,0,0,0.04);
+      margin-bottom:18px;
+    }
+    .left{
+      flex:1;
+    }
+    .meta{font-size:14px;color:#444;margin-bottom:8px;}
+    .word{
+      font-size:48px;font-weight:800;color:var(--dark);letter-spacing:1px;
+    }
+    .jp{font-size:16px;color:#666;margin-top:6px;}
+    .controls{
+      display:flex;flex-direction:column;gap:12px;align-items:center;
+      min-width:200px;
+    }
+    .btn{
+      width:100%;padding:12px 10px;border-radius:8px;border:0;font-weight:700;font-size:18px;cursor:pointer;
+      background:linear-gradient(180deg,#fff,#fff);box-shadow:0 6px 12px rgba(0,0,0,0.04)
+    }
+    .btn.de{color:#d35400;border:2px solid rgba(211,84,0,0.08);}
+    .btn.het{color:#0b5cff;border:2px solid rgba(11,92,255,0.06);}
+    .countdown{
+      font-size:20px;font-weight:700;color:var(--dark);
+      background:rgba(0,0,0,0.03);padding:6px 12px;border-radius:8px;
+    }
+    .result-area{padding:14px;border-radius:8px;background:#fffaf2;border:1px solid rgba(255,111,0,0.08);}
+    .explain{margin-top:8px;color:#333;line-height:1.4}
+    .next-row{display:flex;gap:12px;justify-content:space-between;margin-top:18px;align-items:center;}
+    .next-btn{padding:10px 14px;border-radius:8px;border:0;background:var(--orange);color:white;font-weight:700;cursor:pointer;}
+    .next-btn.secondary{background:#ccc;color:#333}
+    .score{font-weight:800;color:var(--dark)}
+    .final-screen{display:none;padding:30px;text-align:center;}
+    .final-screen h2{margin-top:0;color:var(--orange)}
+    .summary{margin-top:14px;color:#333}
+    /* pop-up overlay */
+    .overlay{
+      position:fixed;left:0;top:0;width:100%;height:100%;display:none;
+      align-items:center;justify-content:center;background:rgba(0,0,0,0.35);z-index:40;
+    }
+    .popup{
+      background:white;padding:22px;border-radius:12px;max-width:420px;width:88%;
+      box-shadow:0 12px 40px rgba(0,0,0,0.25);text-align:center;
+    }
+    .popup .correct{color:var(--correct);font-weight:800;font-size:20px}
+    .popup .wrong{color:var(--wrong);font-weight:800;font-size:20px}
+    /* small */
+    @media (max-width:720px){
+      .question-card{flex-direction:column;align-items:stretch;}
+      .controls{min-width:auto;flex-direction:row;gap:8px;}
+      .btn{font-size:16px;padding:10px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Dutch de het quiz">
+    <header>
+      <h1>Dutch de / het Quiz</h1>
+      <small>Choose the correct article — de or het</small>
+    </header>
+
+    <div class="content">
+      <div class="start-card center" id="startScreen">
+        <h2 style="margin:0;color:var(--dark)">de / het の練習 — Practice de / het</h2>
+        <p class="info" id="introText">
+          日本語: 50問あります。各単語には日本語の訳が表示されます。問題ごとに5秒の制限時間があります（5秒後に自動で正解が表示されます）。時間内に選ぶとすぐに判定されます。<br>
+          English: 50 questions. Each Dutch word shows a Japanese translation. You have 5 seconds per question (the correct answer appears automatically after 5 seconds). If you answer within the time, your answer is checked immediately.
+        </p>
+        <button class="start-btn" id="startBtn">Start / スタート</button>
+        <p style="margin-top:12px;color:#666;font-size:14px">日本語: タイマーが終わる前に答えると復習に良いです。 — English: Try to answer before the timer ends to practise recall.</p>
+      </div>
+
+      <div class="quiz" id="quizScreen" aria-hidden="true">
+        <div class="question-card" role="region" aria-live="polite">
+          <div class="left">
+            <div class="meta"><span id="qIndex">1 / 50</span> &nbsp;•&nbsp; Score: <span id="score">0</span></div>
+            <div class="word" id="word">huis</div>
+            <div class="jp" id="jp">家 (いえ)</div>
+          </div>
+
+          <div class="controls">
+            <div class="countdown" id="countdown">5</div>
+            <button class="btn de" id="btnDe">de</button>
+            <button class="btn het" id="btnHet">het</button>
+          </div>
+        </div>
+
+        <div class="result-area" id="resultArea" aria-live="polite" style="display:none">
+          <div id="answerText" style="font-weight:800"></div>
+          <div class="explain" id="explainText"></div>
+        </div>
+
+        <div class="next-row">
+          <div><button class="next-btn secondary" id="skipBtn">Skip / 答えを見る</button></div>
+          <div>
+            <button class="next-btn" id="nextBtn" disabled>Next → / 次へ</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="final-screen center" id="finalScreen" aria-hidden="true">
+        <h2>Finished! 終了しました！</h2>
+        <div class="summary">
+          日本語: スコア — Your score: <span class="score" id="finalScore">0</span> / 50
+        </div>
+        <p style="margin-top:14px;color:#444">日本語: 再挑戦するか、出題順のシャッフルを希望してください。 — English: You can restart or ask for shuffled questions.</p>
+        <div style="margin-top:18px">
+          <button class="start-btn" id="restartBtn">Restart / 再スタート</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" style="display:none">
+    <div class="popup" id="popup">
+      <div id="popupTitle" style="font-size:18px;margin-bottom:6px"></div>
+      <div id="popupExplain" style="color:#333;margin-bottom:10px;line-height:1.4"></div>
+      <button class="next-btn" id="popupOk">OK</button>
+    </div>
+  </div>
+
+  <script>
+    // Question data: 50 items with article, Dutch word, Japanese translation,
+    // English explanation and Japanese explanation (1-2 lines).
+    const questions = [
+      {word:'man', article:'de', jp:'男 (おとこ)',
+       explain_en:'Most people and living things are "de" nouns.',
+       explain_ja:'人や生き物はたいてい「de」です。'},
+
+      {word:'vrouw', article:'de', jp:'女 (おんな)',
+       explain_en:'People typically take "de".',
+       explain_ja:'人は一般に「de」を使います。'},
+
+      {word:'huis', article:'het', jp:'家 (いえ)',
+       explain_en:'Many objects are "het"; memorize common ones like "het huis".',
+       explain_ja:'物には「het」が多いです。例えば「het huis（家）」を覚えましょう。'},
+
+      {word:'tafel', article:'de', jp:'机 (つくえ)',
+       explain_en:'Furniture words are often "de".',
+       explain_ja:'家具を表す語はたいてい「de」です。'},
+
+      {word:'boek', article:'het', jp:'本 (ほん)',
+       explain_en:'Many nouns for objects are "het"; learn common examples.',
+       explain_ja:'物を表す名詞の中に「het」が多くあります。代表例を覚えましょう。'},
+
+      {word:'stoel', article:'de', jp:'椅子 (いす)',
+       explain_en:'Chairs and similar furniture are usually "de".',
+       explain_ja:'椅子などの家具は通常「de」です。'},
+
+      {word:'kind', article:'het', jp:'子供 (こども)',
+       explain_en:'Many young or neutral nouns can be "het"; note "het kind".',
+       explain_ja:'子どもなど若い対象や中性の名詞は「het」の場合があります（例: het kind）。'},
+
+      {word:'deur', article:'de', jp:'ドア (ドア)',
+       explain_en:'Everyday objects vary; learn each noun\'s article.',
+       explain_ja:'日常の物は分かれます。各単語の性を覚えましょう。'},
+
+      {word:'raam', article:'het', jp:'窓 (まど)',
+       explain_en:'Many small household parts are "het".',
+       explain_ja:'家の小さな部分は「het」のことが多いです。'},
+
+      {word:'auto', article:'de', jp:'車 (くるま)',
+       explain_en:'Vehicles like "de auto" take "de".',
+       explain_ja:'車などの乗り物は「de」を使うことが多いです（de auto）。'},
+
+      {word:'fiets', article:'de', jp:'自転車 (じてんしゃ)',
+       explain_en:'Common vehicles and items are often "de".',
+       explain_ja:'一般的な乗り物や物は多くが「de」です。'},
+
+      {word:'water', article:'het', jp:'水 (みず)',
+       explain_en:'Uncountable substances like "water" are often "het".',
+       explain_ja:'不可算名詞（水など）はたいてい「het」です。'},
+
+      {word:'straat', article:'de', jp:'通り (とおり)',
+       explain_en:'Streets and many places use "de".',
+       explain_ja:'通りなどの場所は「de」を使うことが多いです。'},
+
+      {word:'dorp', article:'het', jp:'村 (むら)',
+       explain_en:'Some place names are "het" — memorize "het dorp".',
+       explain_ja:'場所名は「het」もあります。例: het dorp（村）。'},
+
+      {word:'stad', article:'de', jp:'町 (まち)',
+       explain_en:'Towns/cities often take "de".',
+       explain_ja:'町や都市は多くが「de」です。'},
+
+      {word:'school', article:'de', jp:'学校 (がっこう)',
+       explain_en:'Institutions like school are usually "de".',
+       explain_ja:'学校などの施設は通常「de」です。'},
+
+      {word:'probleem', article:'het', jp:'問題 (もんだい)',
+       explain_en:'Abstract nouns (often of Greek/Latin origin) are often "het".',
+       explain_ja:'抽象名詞（ギリシャ語・ラテン語由来が多い）は「het」のことが多いです。'},
+
+      {word:'vraag', article:'de', jp:'質問 (しつもん)',
+       explain_en:'Questions and many concrete nouns are "de".',
+       explain_ja:'質問など具体的な名詞は「de」が多いです。'},
+
+      {word:'antwoord', article:'het', jp:'答え (こたえ)',
+       explain_en:'Some short abstract nouns take "het".',
+       explain_ja:'短い抽象名詞は「het」になることがあります（het antwoord）。'},
+
+      {word:'hand', article:'de', jp:'手 (て)',
+       explain_en:'Many body parts are "de".',
+       explain_ja:'身体の部位は多くが「de」です。'},
+
+      {word:'hoofd', article:'het', jp:'頭 (あたま)',
+       explain_en:'Some body parts are "het" — memorize each one.',
+       explain_ja:'一部の体の部位は「het」です。個別に覚えましょう。'},
+
+      {word:'hond', article:'de', jp:'犬 (いぬ)',
+       explain_en:'Animals usually take "de".',
+       explain_ja:'動物は一般に「de」を使います。'},
+
+      {word:'kat', article:'de', jp:'猫 (ねこ)',
+       explain_en:'Most pets use "de".',
+       explain_ja:'ペットとしての動物はたいてい「de」です。'},
+
+      {word:'meisje', article:'het', jp:'女の子 (おんなのこ)',
+       explain_en:'Diminutives ending in -je are almost always "het".',
+       explain_ja:'-jeで終わる縮小辞（diminutive）はほとんど常に「het」です（例: het meisje）。'},
+
+      {word:'jongen', article:'de', jp:'男の子 (おとこのこ)',
+       explain_en:'People are typically "de".',
+       explain_ja:'人を表す語は通常「de」です。'},
+
+      {word:'huiswerk', article:'het', jp:'宿題 (しゅくだい)',
+       explain_en:'Abstract tasks or collective nouns are often "het".',
+       explain_ja:'宿題のような抽象的・集合的な名詞は「het」です。'},
+
+      {word:'krant', article:'de', jp:'新聞 (しんぶん)',
+       explain_en:'Publications and newspapers are usually "de".',
+       explain_ja:'新聞や出版物は通常「de」です。'},
+
+      {word:'nieuws', article:'het', jp:'ニュース (ニュース)',
+       explain_en:'Uncountable news/information is "het".',
+       explain_ja:'ニュースや情報（不可算）は「het」です（het nieuws）。'},
+
+      {word:'muur', article:'de', jp:'壁 (かべ)',
+       explain_en:'Many building parts are "de".',
+       explain_ja:'建物の部位は多くが「de」です。'},
+
+      {word:'schilderij', article:'het', jp:'絵 (え)',
+       explain_en:'Artworks like paintings are often "het".',
+       explain_ja:'絵画などの芸術作品は「het」がよく使われます。'},
+
+      {word:'plant', article:'de', jp:'植物 (しょくぶつ)',
+       explain_en:'Most plants and living things are "de".',
+       explain_ja:'植物や生き物は多くが「de」です。'},
+
+      {word:'museum', article:'het', jp:'博物館 (はくぶつかん)',
+       explain_en:'Many -um words (Latin) are "het".',
+       explain_ja:'語尾が -um の単語は「het」になることが多いです（例: het museum）。'},
+
+      {word:'computer', article:'de', jp:'コンピュータ (コンピュータ)',
+       explain_en:'Some modern loanwords commonly use "de".',
+       explain_ja:'外来語の中には「de」を使うものもあります（例: de computer）。'},
+
+      {word:'scherm', article:'het', jp:'画面 (がめん)',
+       explain_en:'Screens and device parts can be "het".',
+       explain_ja:'画面や機器の部位は「het」になることがあります。'},
+
+      {word:'telefoon', article:'de', jp:'電話 (でんわ)',
+       explain_en:'Communication devices often take "de".',
+       explain_ja:'電話など通信機器は「de」が使われることが多いです。'},
+
+      {word:'eiland', article:'het', jp:'島 (しま)',
+       explain_en:'Islands are often "het" (e.g., het eiland).',
+       explain_ja:'島は「het」になることが多いです（例: het eiland）。'},
+
+      {word:'berg', article:'de', jp:'山 (やま)',
+       explain_en:'Many mountains/nature terms are "de".',
+       explain_ja:'山など自然に関する語は多くが「de」です。'},
+
+      {word:'bos', article:'het', jp:'森 (もり)',
+       explain_en:'Some nature words are "het" — learn exceptions.',
+       explain_ja:'自然を表す語でも「het」のものがあります。例: het bos。'},
+
+      {word:'rivier', article:'de', jp:'川 (かわ)',
+       explain_en:'Rivers are usually "de".',
+       explain_ja:'川は通常「de」です。'},
+
+      {word:'dak', article:'het', jp:'屋根 (やね)',
+       explain_en:'Parts of buildings sometimes are "het".',
+       explain_ja:'建物の部分で「het」になる場合があります（het dak）。'},
+
+      {word:'ladder', article:'de', jp:'はしご (はしご)',
+       explain_en:'Tools and many objects often take "de".',
+       explain_ja:'道具や多くの物は「de」を使います。'},
+
+      {word:'ei', article:'het', jp:'卵 (たまご)',
+       explain_en:'Some food items are "het".',
+       explain_ja:'食べ物の中には「het」のものがあります（例: het ei）。'},
+
+      {word:'appel', article:'de', jp:'りんご (りんご)',
+       explain_en:'Many fruit names use "de".',
+       explain_ja:'果物の名前は多くが「de」です。'},
+
+      {word:'vlees', article:'het', jp:'肉 (にく)',
+       explain_en:'Uncountable food categories are usually "het".',
+       explain_ja:'不可算の食べ物のカテゴリーはたいてい「het」です（例: het vlees）。'},
+
+      {word:'leerling', article:'de', jp:'生徒 (せいと)',
+       explain_en:'People like students are "de".',
+       explain_ja:'生徒など人を表す語は「de」です。'},
+
+      {word:'pak', article:'het', jp:'スーツ (スーツ)',
+       explain_en:'Some clothing items are "het" (het pak).',
+       explain_ja:'衣類の中で「het」になるものがあります（例: het pak）。'},
+
+      {word:'jas', article:'de', jp:'上着 (うわぎ)',
+       explain_en:'Many clothing items use "de".',
+       explain_ja:'多くの衣類は「de」を使います（例: de jas）。'},
+
+      {word:'licht', article:'het', jp:'明かり (あかり)',
+       explain_en:'Abstract phenomena like light are often "het".',
+       explain_ja:'光など抽象的な現象は「het」が使われることが多いです。'},
+
+      {word:'kleur', article:'de', jp:'色 (いろ)',
+       explain_en:'Most colors are "de".',
+       explain_ja:'色の名前は多くが「de」です。'},
+
+      {word:'gebouw', article:'het', jp:'建物 (たてもの)',
+       explain_en:'Many buildings are "het".',
+       explain_ja:'建物は「het」で表されることが多いです（例: het gebouw）。'}
+    ];
+
+    // State
+    let currentIndex = 0;
+    let score = 0;
+    let timer = null;
+    let timeLeft = 5; // 5 seconds per question
+    let answered = false;
+
+    // DOM elements
+    const startBtn = document.getElementById('startBtn');
+    const startScreen = document.getElementById('startScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const finalScreen = document.getElementById('finalScreen');
+    const restartBtn = document.getElementById('restartBtn');
+
+    const qIndexEl = document.getElementById('qIndex');
+    const wordEl = document.getElementById('word');
+    const jpEl = document.getElementById('jp');
+    const countdownEl = document.getElementById('countdown');
+    const btnDe = document.getElementById('btnDe');
+    const btnHet = document.getElementById('btnHet');
+    const resultArea = document.getElementById('resultArea');
+    const answerText = document.getElementById('answerText');
+    const explainText = document.getElementById('explainText');
+    const nextBtn = document.getElementById('nextBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const scoreEl = document.getElementById('score');
+    const finalScoreEl = document.getElementById('finalScore');
+
+    const overlay = document.getElementById('overlay');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupExplain = document.getElementById('popupExplain');
+    const popupOk = document.getElementById('popupOk');
+
+    // Start quiz
+    startBtn.addEventListener('click', () => {
+      startScreen.style.display = 'none';
+      quizScreen.style.display = 'block';
+      quizScreen.setAttribute('aria-hidden','false');
+      currentIndex = 0;
+      score = 0;
+      scoreEl.textContent = '0';
+      showQuestion();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      finalScreen.style.display = 'none';
+      startScreen.style.display = 'block';
+    });
+
+    // Button handlers
+    btnDe.addEventListener('click', () => handleAnswer('de'));
+    btnHet.addEventListener('click', () => handleAnswer('het'));
+    nextBtn.addEventListener('click', () => {
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    });
+    skipBtn.addEventListener('click', () => {
+      // Show answer immediately (same as timeout)
+      if (!answered) revealCorrect();
+    });
+
+    popupOk.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+
+    function showQuestion(){
+      // Reset UI
+      answered = false;
+      resultArea.style.display = 'none';
+      nextBtn.disabled = true;
+      btnDe.disabled = false;
+      btnHet.disabled = false;
+      btnDe.style.opacity = 1;
+      btnHet.style.opacity = 1;
+      // Show current q
+      const q = questions[currentIndex];
+      qIndexEl.textContent = (currentIndex+1) + ' / ' + questions.length;
+      wordEl.textContent = q.word;
+      jpEl.textContent = q.jp;
+      countdownEl.textContent = '5';
+      // start timer
+      timeLeft = 5;
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        countdownEl.textContent = String(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          if (!answered) {
+            revealCorrect();
+          }
+        }
+      }, 1000);
+    }
+
+    function handleAnswer(choice){
+      if (answered) return;
+      answered = true;
+      clearInterval(timer);
+      btnDe.disabled = true;
+      btnHet.disabled = true;
+      // Check
+      const q = questions[currentIndex];
+      const isCorrect = (choice === q.article);
+      if (isCorrect) {
+        score++;
+        scoreEl.textContent = String(score);
+      }
+      // Show result area
+      showResult(choice, q, isCorrect);
+      // Show popup immediately as well
+      showPopup(isCorrect, q, false);
+      nextBtn.disabled = false;
+    }
+
+    function revealCorrect(){
+      answered = true;
+      btnDe.disabled = true;
+      btnHet.disabled = true;
+      const q = questions[currentIndex];
+      // mark as not correct if the user didn't answer
+      showResult(null, q, false, true);
+      showPopup(false, q, true); // reveal due to timeout/skip
+      nextBtn.disabled = false;
+    }
+
+    function showResult(chosen, q, isCorrect, timedOut=false){
+      resultArea.style.display = 'block';
+      if (chosen === null){
+        answerText.innerHTML = `Time's up / 時間切れ — correct / 正解: <span style="color:var(--orange);font-weight:800">${q.article} ${q.word}</span>`;
+      } else if (isCorrect) {
+        answerText.innerHTML = `Correct / 正解: <span style="color:var(--correct)">${q.article} ${q.word}</span>`;
+      } else {
+        answerText.innerHTML = `Wrong / 間違い — you chose / あなたの選択: <strong>${chosen}</strong>. Correct / 正解: <span style="color:var(--orange);font-weight:800">${q.article} ${q.word}</span>`;
+      }
+      // Show explanation in EN + JP
+      explainText.innerHTML = `<strong>English:</strong> ${q.explain_en}<br><strong>日本語:</strong> ${q.explain_ja}`;
+    }
+
+    function showPopup(isCorrect, q, timedOut=false){
+      overlay.style.display = 'flex';
+      if (timedOut) {
+        popupTitle.innerHTML = `<span class="wrong">Time / 時間切れ</span> — 正解: ${q.article} ${q.word}`;
+      } else if (isCorrect) {
+        popupTitle.innerHTML = `<span class="correct">Good! / 正解!</span> ${q.article} ${q.word}`;
+      } else {
+        popupTitle.innerHTML = `<span class="wrong">Oops / 間違い</span> — 正解: ${q.article} ${q.word}`;
+      }
+      popupExplain.innerHTML = `<strong>English:</strong> ${q.explain_en}<br><strong>日本語:</strong> ${q.explain_ja}<br><em>和訳:</em> ${q.jp}`;
+    }
+
+    function endQuiz(){
+      quizScreen.style.display = 'none';
+      finalScreen.style.display = 'block';
+      finalScreen.setAttribute('aria-hidden','false');
+      finalScoreEl.textContent = String(score);
+      // Reset overlay if open
+      overlay.style.display = 'none';
+    }
+
+    // Accessibility: allow Enter to start
+    startBtn.addEventListener('keyup', (e) => { if (e.key === 'Enter') startBtn.click(); });
+    btnDe.addEventListener('keyup', (e) => { if (e.key === 'Enter') btnDe.click(); });
+    btnHet.addEventListener('keyup', (e) => { if (e.key === 'Enter') btnHet.click(); });
+
+    // Allow spacebar to close popup OK when open
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ' && overlay.style.display === 'flex') {
+        e.preventDefault();
+        popupOk.click();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dutch Word Order — Practice Game (with grammar help)</title>
+<style>
+  :root{
+    --orange:#ff7f00;
+    --soft:#fffaf5;
+    --dark:#2b2b2b;
+    --accent:#0066a2;
+    --chip-bg:#fff;
+    --chip-border:#e6e6e6;
+  }
+  *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{margin:0;background:linear-gradient(180deg,#fffaf5 0%, #fff 40%);color:var(--dark);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+  header{width:100%;background:var(--orange);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 8px rgba(0,0,0,0.08);}
+  header .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;}
+  .svg-sm{width:36px;height:36px;flex:0 0 36px;}
+  main{width:100%;max-width:920px;padding:22px;}
+  .card{background:rgba(255,255,255,0.95);border-radius:12px;padding:18px;box-shadow:0 8px 20px rgba(0,0,0,0.06);}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .score-bubble{background:var(--chip-bg);padding:8px 12px;border-radius:999px;border:1px solid var(--chip-border);display:flex;gap:10px;align-items:center;font-weight:600;}
+  .qnum{color:var(--accent);font-weight:700;}
+  .sentence-area{display:flex;flex-direction:column;gap:12px;}
+  .slots{display:flex;gap:8px;flex-wrap:wrap;min-height:54px;padding:10px;border-radius:10px;border:2px dashed rgba(0,0,0,0.06);background:linear-gradient(180deg, rgba(255,255,255,0.6), transparent);}
+  .slot{min-width:80px;min-height:40px;border-radius:8px;background:transparent;border:1px dashed transparent;display:flex;align-items:center;justify-content:center;padding:6px 10px;}
+  .slot.empty{background:transparent;border:1px dashed rgba(0,0,0,0.06);color:rgba(0,0,0,0.35);}
+  .bank{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7));}
+  .word{cursor:grab;background:var(--chip-bg);border:1px solid var(--chip-border);padding:8px 12px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.04);user-select:none;}
+  .word.dragging{opacity:0.5;transform:scale(0.98);}
+  .controls{display:flex;gap:10px;align-items:center;margin-top:12px;}
+  button.btn{border:0;background:var(--accent);color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700;}
+  button.ghost{background:transparent;border:1px solid rgba(0,0,0,0.08);padding:8px 12px;border-radius:8px;cursor:pointer;}
+  .hint{color:rgba(0,0,0,0.6);font-size:13px;margin-top:6px;}
+  .small-translate{font-size:12px;color:rgba(0,0,0,0.45);margin-left:8px;}
+  .footer{margin-top:14px;font-size:13px;color:rgba(0,0,0,0.45);display:flex;justify-content:space-between;align-items:center;}
+  .progress{height:10px;background:rgba(0,0,0,0.06);border-radius:999px;overflow:hidden;width:50%;}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--accent));width:0%;}
+  .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.32);visibility:hidden;opacity:0;transition:opacity .18s ease,visibility .18s;}
+  .modal.show{visibility:visible;opacity:1;}
+  .modal-box{background:#fff;padding:18px;border-radius:12px;min-width:300px;max-width:92%;text-align:left;box-shadow:0 14px 40px rgba(0,0,0,0.18);}
+  .modal-header{display:flex;align-items:center;gap:12px;}
+  .modal-body{margin-top:8px;}
+  .rule-title{font-weight:700;margin-bottom:6px;}
+  .rule-text{color:rgba(0,0,0,0.75);font-size:14px;line-height:1.4;}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+  .translation-box{background:#fff7eb;border-radius:8px;padding:10px;color:rgba(0,0,0,0.75);font-size:14px;border:1px solid rgba(255,127,0,0.12);}
+  .decor-row{display:flex;gap:8px;align-items:center;}
+  .tulip{width:26px;height:26px;}
+  @media (max-width:560px){.slot{min-width:64px}.word{padding:6px 10px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="svg-sm" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <rect width="64" height="64" rx="8" fill="#fff" opacity="0.06"/>
+      <g transform="translate(6,6)" fill="none" stroke="#fff" stroke-width="2">
+        <path d="M13 32 C13 19 24 12 24 0"/>
+        <path d="M13 32 C13 19 2 12 2 0"/>
+      </g>
+      <circle cx="46" cy="38" r="6" fill="#fff" opacity="0.12"/>
+    </svg>
+    Dutch Word Order
+    <span class="small-translate">· Nederlands: Woordvolgorde</span>
+  </div>
+  <div style="flex:1"></div>
+  <div class="icons" style="display:flex;gap:12px;align-items:center;">
+    <div style="color:#fff;font-weight:600">Beginner <span class="small-translate">· Beginner (EN)</span></div>
+    <svg class="svg-sm" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <rect width="64" height="64" rx="8" fill="#fff" opacity="0.06"/>
+      <g transform="translate(8,12)" fill="#fff" opacity="0.95">
+        <path d="M20 0 L24 10 L34 12 L26 20 L28 30 L20 24 L12 30 L14 20 L6 12 L16 10 Z"/>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<main>
+  <div class="card" id="mainCard">
+    <div class="topbar">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="qnum" id="qnumDisplay">Vraag <span id="q-index">1</span>/10</div>
+          <div style="color:rgba(0,0,0,0.5);font-size:14px;">Zet de woorden in de juiste volgorde
+            <span class="small-translate">· Put the words in the correct order</span>
+          </div>
+        </div>
+        <div class="hint">Gebruik de muis om woorden te slepen naar de plek.
+          <span class="small-translate">· Use your mouse to drag words into the slots</span>
+        </div>
+      </div>
+      <div class="score-bubble" title="score · score (EN)">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17.3l6.18 3.73-1.64-7.03L20.5 9.5l-7.19-.62L12 2.5l-1.31 6.38L3.5 9.5l3.96 4.5L5.82 21z"/></svg>
+          <span id="score">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sentence-area">
+      <div id="slots" class="slots" aria-label="answer slots"></div>
+
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button id="transToggle" class="translate-toggle">Vertaling tonen · Show translation</button>
+        <div style="flex:1"></div>
+        <div style="font-size:13px;color:rgba(0,0,0,0.6);">Max 6 woorden · Max 6 words</div>
+      </div>
+
+      <div id="translationBox" class="translation-box" style="display:none;margin-top:8px;" aria-live="polite"></div>
+
+      <div id="bank" class="bank" aria-label="word bank"></div>
+
+      <div class="controls">
+        <button id="checkBtn" class="btn" disabled>Controleer · Check</button>
+        <button id="resetBtn" class="ghost">Reset zin · Reset sentence</button>
+        <div style="flex:1"></div>
+        <div class="decor-row" aria-hidden>
+          <svg class="tulip" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#ff6f00" d="M12 2C12 2 16 6 16 10c0 3-2 6-4 6s-4-3-4-6C8 6 12 2 12 2z"/>
+            <path fill="#0b6b2e" d="M12 22v-8"/>
+          </svg>
+          <svg class="tulip" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g fill="#fff" opacity="0.9">
+              <path d="M12 2l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd"/>
+            </g>
+            <path d="M12 22v-8" stroke="#d43" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div style="font-weight:600;color:rgba(0,0,0,0.6)">Dutch basics • Woordvolgorde <span class="small-translate">· Word order</span></div>
+        <div class="progress" title="progress · voortgang">
+          <i id="prog"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- modal -->
+<div id="modal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-box" role="document">
+    <div class="modal-header">
+      <div id="modal-icon" style="font-size:28px">✅</div>
+      <div>
+        <div id="modal-title" style="font-weight:800">Correct! · Goed</div>
+        <div id="modal-sub" style="color:rgba(0,0,0,0.6);font-size:13px;margin-top:3px;">Feedback and grammar • Feedback en grammatica</div>
+      </div>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div id="modal-text" class="rule-text">Good job — you got a point.</div>
+    </div>
+    <div class="modal-actions" id="modal-actions">
+      <!-- Buttons inserted dynamically -->
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Questions (Dutch tokens)
+  const QUESTIONS = [
+    ["Ik","lees","een","boek."],
+    ["De","kat","zit","op","de","mat."],
+    ["Wij","gaan","morgen","naar","school."],
+    ["Zij","eet","graag","appels."],
+    ["Ik","heb","twee","broers."],
+    ["De","jongen","speelt","met","de","bal."],
+    ["Heb","jij","mijn","pen?"],
+    ["Hij","werkt","elke","dag."],
+    ["De","vogels","zingen","in","de","ochtend."],
+    ["Kunnen","we","straks","wandelen?"]
+  ];
+
+  // Full-sentence English translations
+  const TRANSLATIONS = [
+    "I am reading a book.",
+    "The cat is sitting on the mat.",
+    "We are going to school tomorrow.",
+    "She likes to eat apples.",
+    "I have two brothers.",
+    "The boy is playing with the ball.",
+    "Do you have my pen?",
+    "He works every day.",
+    "The birds sing in the morning.",
+    "Can we go for a walk later?"
+  ];
+
+  // Grammar explanations for each question (Dutch + English)
+  const EXPLANATIONS = [
+    {
+      title: "Hoofdzinnen: Werkwoord op tweede plaats (V2)\nMain clauses: verb in second position (V2)",
+      textNL: "In Nederlandse hoofdzinnen staat het vervoegde werkwoord meestal op de tweede plaats. De volgorde is vaak: Onderwerp - Werkwoord - Voorwerp.\nVoorbeeld: \"Ik lees een boek.\"",
+      textEN: "In Dutch main clauses the finite verb usually appears in the second position. Typical order: Subject - Verb - Object.\nExample: \"Ik lees een boek.\""
+    },
+    {
+      title: "Werkwoord + voorzetselgroep na onderwerp\nVerb + prepositional phrase after subject",
+      textNL: "Het werkwoord volgt het onderwerp (V2) en plaats- of voorzetselgroepen komen meestal na het werkwoord: \"De kat zit op de mat.\"",
+      textEN: "The verb follows the subject (V2) and place/prepositional phrases typically come after the verb: \"De kat zit op de mat.\""
+    },
+    {
+      title: "Tijdsbepaling vóór plaatsaanduiding\nTime expressions before place",
+      textNL: "Tijdsbepalingen (zoals 'morgen') komen vaak vóór plaatsaanduidingen ('naar school'). De V2-regel geldt nog steeds: \"Wij gaan morgen naar school.\"",
+      textEN: "Time expressions (e.g. 'morgen') often come before place expressions ('naar school'). The V2 rule still applies: \"Wij gaan morgen naar school.\""
+    },
+    {
+      title: "Bijwoord van voorkeur na het werkwoord\nAdverb of liking after the verb",
+      textNL: "'graag' (liking) staat direct na het werkwoord: Werkwoord - graag - lijdend voorwerp. Bijvoorbeeld: \"Zij eet graag appels.\"",
+      textEN: "'graag' (to like) comes after the verb: Verb - graag - object. Example: \"Zij eet graag appels.\""
+    },
+    {
+      title: "Telwoorden en lijdend voorwerp\nNumbers and direct objects",
+      textNL: "Telwoorden staan gewoonlijk vóór het zelfstandig naamwoord in het lijdend voorwerp: \"Ik heb twee broers.\" De V2-structuur blijft: Onderwerp - Werkwoord - Voorwerp.",
+      textEN: "Numbers usually precede the noun in the object: \"Ik heb twee broers.\" V2 structure still applies: Subject - Verb - Object."
+    },
+    {
+      title: "Voorzetselobject na werkwoord\nPrepositional object after the verb",
+      textNL: "Voorzetselgroepen zoals 'met de bal' volgen meestal het werkwoord: \"De jongen speelt met de bal.\"",
+      textEN: "Prepositional groups like 'met de bal' usually follow the verb: \"De jongen speelt met de bal.\""
+    },
+    {
+      title: "Ja/nee-vragen: werkwoord voor onderwerp\nYes/no questions: verb before subject",
+      textNL: "Bij ja/nee-vragen komt het vervoegde werkwoord vóór het onderwerp (inversie), bijvoorbeeld: \"Heb jij mijn pen?\" (Werkwoord - Onderwerp - Rest).",
+      textEN: "In yes/no questions the finite verb comes before the subject (inversion): \"Heb jij mijn pen?\" (Verb - Subject - ...)."
+    },
+    {
+      title: "Tijdsuitdrukking na werkwoord\nTime expression after the verb",
+      textNL: "Duidingen van frequentie/tijd (zoals 'elke dag') volgen meestal het werkwoord: \"Hij werkt elke dag.\"",
+      textEN: "Frequency/time expressions (like 'elke dag') usually follow the verb: \"Hij werkt elke dag.\""
+    },
+    {
+      title: "Plaats/tijd na werkwoord\nPlace/time after the verb",
+      textNL: "Plaats- en tijdsaanduidingen komen vaak na het werkwoord: \"De vogels zingen in de ochtend.\"",
+      textEN: "Place/time expressions often come after the verb: \"De vogels zingen in de ochtend.\""
+    },
+    {
+      title: "Vragende zin met modaal hulpwerkwoord\nQuestion with modal auxiliary",
+      textNL: "Bij vragende zinnen met een modaal werkwoord staat dat werkwoord vooraan: \"Kunnen we straks wandelen?\" (Werkwoord - Onderwerp - Tijd - Infinitief).",
+      textEN: "In a question with a modal auxiliary the modal appears first: \"Kunnen we straks wandelen?\" (Verb - Subject - Time - Infinitive)."
+    }
+  ];
+
+  // DOM refs
+  const slotsEl = document.getElementById('slots');
+  const bankEl = document.getElementById('bank');
+  const scoreEl = document.getElementById('score');
+  const qIndexEl = document.getElementById('q-index');
+  const transToggle = document.getElementById('transToggle');
+  const translationBox = document.getElementById('translationBox');
+  const checkBtn = document.getElementById('checkBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const modal = document.getElementById('modal');
+  const modalIcon = document.getElementById('modal-icon');
+  const modalTitle = document.getElementById('modal-title');
+  const modalSub = document.getElementById('modal-sub');
+  const modalBody = document.getElementById('modal-body');
+  const modalActions = document.getElementById('modal-actions');
+  const modalText = document.getElementById('modal-text');
+  const prog = document.getElementById('prog');
+  const mainCard = document.getElementById('mainCard');
+
+  let qIndex = 0;
+  let score = 0;
+  let currentWords = [];
+  let dragId = null;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function updateProgress(){ prog.style.width = (qIndex/QUESTIONS.length*100)+'%'; }
+
+  function start(){
+    qIndex = 0; score = 0;
+    scoreEl.textContent = score;
+    qIndexEl.textContent = qIndex+1;
+    updateProgress();
+    loadQuestion();
+  }
+
+  function loadQuestion(){
+    slotsEl.innerHTML = '';
+    bankEl.innerHTML = '';
+    translationBox.style.display = 'none';
+    transToggle.textContent = 'Vertaling tonen · Show translation';
+    checkBtn.disabled = true;
+
+    if(qIndex >= QUESTIONS.length){
+      showFinal();
+      return;
+    }
+
+    currentWords = QUESTIONS[qIndex].slice();
+    qIndexEl.textContent = qIndex+1;
+
+    // build slots
+    for(let i=0;i<currentWords.length;i++){
+      const s = document.createElement('div');
+      s.className = 'slot empty';
+      s.dataset.index = i;
+      s.draggable = false;
+      s.addEventListener('dragover', onDragOver);
+      s.addEventListener('drop', onDropOnSlot);
+      s.addEventListener('click', onSlotClick);
+      s.textContent = '';
+      slotsEl.appendChild(s);
+    }
+
+    // words in bank, shuffled, no translations inside tokens
+    const shuffled = shuffle(currentWords);
+    shuffled.forEach(w=>{
+      bankEl.appendChild(createWordElem(w));
+    });
+
+    updateProgress();
+  }
+
+  function createWordElem(word){
+    const el = document.createElement('div');
+    el.className = 'word';
+    el.textContent = word;
+    el.draggable = true;
+    el.dataset.word = word;
+    el.addEventListener('dragstart', onDragStart);
+    el.addEventListener('dragend', onDragEnd);
+    el.addEventListener('click', onBankClick);
+    return el;
+  }
+
+  function onDragStart(e){
+    dragId = this.dataset.word;
+    e.dataTransfer.setData('text/plain', dragId);
+    this.classList.add('dragging');
+    if(e.dataTransfer.setDragImage){
+      const crt = this.cloneNode(true);
+      crt.style.position='absolute';
+      crt.style.top='-1000px';
+      document.body.appendChild(crt);
+      e.dataTransfer.setDragImage(crt, 10, 10);
+      setTimeout(()=>document.body.removeChild(crt),0);
+    }
+  }
+  function onDragEnd(){ this.classList.remove('dragging'); dragId = null; }
+  function onDragOver(e){ e.preventDefault(); this.classList.add('over'); setTimeout(()=>this.classList.remove('over'),120); }
+
+  function findWordElementByText(word){
+    const all = document.querySelectorAll('.word');
+    for(const el of all) if(el.dataset.word === word) return el;
+    return null;
+  }
+
+  function onDropOnSlot(e){
+    e.preventDefault();
+    const droppedWord = e.dataTransfer.getData('text/plain') || dragId;
+    if(!droppedWord) return;
+    const wordEl = findWordElementByText(droppedWord);
+    if(!wordEl) return;
+
+    // if slot occupied, move existing back to bank
+    if(this.dataset.occupied){
+      const existing = this.querySelector('.word');
+      if(existing) bankEl.appendChild(existing);
+    }
+
+    // remove from previous slot if any
+    const prevSlot = wordEl.closest('.slot');
+    if(prevSlot){
+      prevSlot.classList.add('empty');
+      prevSlot.removeAttribute('data-occupied');
+      prevSlot.innerHTML = '';
+    }
+
+    this.appendChild(wordEl);
+    this.classList.remove('empty');
+    this.dataset.occupied = '1';
+    checkIfAllFilled();
+  }
+
+  function onBankClick(e){
+    const wordEl = e.currentTarget;
+    const emptySlot = Array.from(slotsEl.children).find(s=>!s.dataset.occupied);
+    if(emptySlot){
+      emptySlot.appendChild(wordEl);
+      emptySlot.classList.remove('empty');
+      emptySlot.dataset.occupied = '1';
+      checkIfAllFilled();
+    }
+  }
+
+  function onSlotClick(e){
+    const s = e.currentTarget;
+    const w = s.querySelector('.word');
+    if(w){
+      bankEl.appendChild(w);
+      s.classList.add('empty');
+      s.removeAttribute('data-occupied');
+      s.innerHTML = '';
+      checkIfAllFilled();
+    }
+  }
+
+  bankEl.addEventListener('dragover', e=>e.preventDefault());
+  bankEl.addEventListener('drop', function(e){
+    e.preventDefault();
+    const dropped = e.dataTransfer.getData('text/plain') || dragId;
+    const wordEl = findWordElementByText(dropped);
+    if(wordEl){
+      const parentSlot = wordEl.closest('.slot');
+      if(parentSlot){
+        parentSlot.classList.add('empty');
+        parentSlot.removeAttribute('data-occupied');
+        parentSlot.innerHTML = '';
+      }
+      bankEl.appendChild(wordEl);
+      checkIfAllFilled();
+    }
+  });
+
+  function checkIfAllFilled(){
+    const all = Array.from(slotsEl.children);
+    const filled = all.length > 0 && all.every(s=>s.dataset.occupied);
+    checkBtn.disabled = !filled;
+  }
+
+  checkBtn.addEventListener('click', checkAnswer);
+
+  function getAnswer(){
+    return Array.from(slotsEl.children).map(s=>{
+      const w = s.querySelector('.word');
+      return w ? w.dataset.word : '';
+    });
+  }
+
+  function normalize(arr){
+    return arr.join(' ').replace(/\s+/g,' ').trim();
+  }
+
+  function checkAnswer(){
+    const user = getAnswer();
+    const userStr = normalize(user);
+    const correctStr = normalize(currentWords);
+    if(userStr === correctStr){
+      score++;
+      scoreEl.textContent = score;
+      openModal(true);
+    } else {
+      openModal(false);
+    }
+  }
+
+  // modal behavior
+  function openModal(correct){
+    modal.classList.add('show');
+    modalActions.innerHTML = '';
+    // header
+    if(correct){
+      modalIcon.textContent = '✅';
+      modalTitle.textContent = 'Correct! · Goed';
+      modalSub.textContent = 'Nice — you get a point. • Goed — je krijgt een punt.';
+      modalBody.innerHTML = '<div class="rule-text">Goed gedaan! Klik "Volgende" om door te gaan.</div>';
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn';
+      nextBtn.textContent = 'Volgende · Next';
+      nextBtn.addEventListener('click', ()=>{
+        closeModal();
+        qIndex++;
+        loadQuestion();
+        scoreEl.textContent = score;
+      });
+      modalActions.appendChild(nextBtn);
+    } else {
+      // wrong: show grammar explanation for current question
+      modalIcon.textContent = '❌';
+      modalTitle.textContent = 'Niet goed · Incorrect';
+      modalSub.textContent = 'Hier is waarom — grammatica-uitleg • Here is why — grammar help';
+      const ex = EXPLANATIONS[qIndex] || {title:'Regel', textNL:'', textEN:''};
+      // build body with bilingual rule
+      modalBody.innerHTML = '';
+      const title = document.createElement('div');
+      title.className = 'rule-title';
+      // show bilingual title
+      title.textContent = ex.title;
+      const text = document.createElement('div');
+      text.className = 'rule-text';
+      text.innerHTML = '<strong>Nederlands:</strong><br>' + (ex.textNL || '') + '<br><br><strong>English:</strong><br>' + (ex.textEN || '');
+      modalBody.appendChild(title);
+      modalBody.appendChild(text);
+
+      // Actions: Try again, Show answer
+      const tryBtn = document.createElement('button');
+      tryBtn.className = 'ghost';
+      tryBtn.textContent = 'Probeer opnieuw · Try again';
+      tryBtn.addEventListener('click', ()=>{ closeModal(); });
+
+      const showBtn = document.createElement('button');
+      showBtn.className = 'btn';
+      showBtn.textContent = 'Toon antwoord · Show answer';
+      showBtn.addEventListener('click', ()=>{
+        revealAnswer();
+        // after reveal, replace actions with Next
+        modalActions.innerHTML = '';
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'btn';
+        nextBtn.textContent = 'Volgende · Next';
+        nextBtn.addEventListener('click', ()=>{
+          closeModal();
+          qIndex++;
+          loadQuestion();
+        });
+        modalActions.appendChild(nextBtn);
+      });
+
+      modalActions.appendChild(tryBtn);
+      modalActions.appendChild(showBtn);
+    }
+  }
+
+  function closeModal(){
+    modal.classList.remove('show');
+  }
+
+  // fill slots with correct order (reveal)
+  function revealAnswer(){
+    // clear bank, then fill slots in correct order
+    bankEl.innerHTML = '';
+    Array.from(slotsEl.children).forEach((s,i)=>{
+      s.classList.remove('empty');
+      s.dataset.occupied = '1';
+      s.innerHTML = '';
+      const w = currentWords[i];
+      const wordEl = createWordElem(w);
+      // disable dragging after reveal to avoid accidental change
+      wordEl.draggable = false;
+      wordEl.style.cursor = 'default';
+      s.appendChild(wordEl);
+    });
+    checkBtn.disabled = true;
+  }
+
+  resetBtn.addEventListener('click', ()=>{
+    const words = QUESTIONS[qIndex].slice();
+    bankEl.innerHTML = '';
+    shuffle(words).forEach(w=>bankEl.appendChild(createWordElem(w)));
+    Array.from(slotsEl.children).forEach(s=>{
+      s.classList.add('empty');
+      s.removeAttribute('data-occupied');
+      s.innerHTML = '';
+    });
+    checkBtn.disabled = true;
+    translationBox.style.display = 'none';
+    transToggle.textContent = 'Vertaling tonen · Show translation';
+  });
+
+  function showFinal(){
+    slotsEl.innerHTML = '';
+    bankEl.innerHTML = '';
+    checkBtn.disabled = true;
+    qIndexEl.textContent = QUESTIONS.length;
+    updateProgress();
+    mainCard.innerHTML = `
+      <div style="text-align:center;padding:26px;">
+        <div style="font-size:42px;margin-bottom:6px;">🎉</div>
+        <h2 style="margin:6px 0 6px;font-size:22px;">Klaar! · Done!</h2>
+        <p style="color:rgba(0,0,0,0.6);margin:6px 0;">Je score: <strong>${score}/${QUESTIONS.length}</strong> · Your score</p>
+        <div style="margin-top:12px;">
+          <button id="restartBtn" class="btn">Opnieuw spelen · Play again</button>
+          <button id="reviewBtn" class="ghost">Bekijk zinnen · View sentences</button>
+        </div>
+        <div style="margin-top:18px;color:rgba(0,0,0,0.55);font-size:13px;">Tip: let op werkwoord positie en vraagwoord-volgorde. · Tip: watch verb position and question order.</div>
+      </div>
+    `;
+    document.getElementById('restartBtn').addEventListener('click', ()=>location.reload());
+    document.getElementById('reviewBtn').addEventListener('click', showReview);
+  }
+
+  function showReview(){
+    mainCard.innerHTML = '<div style="padding:12px;"><h3>Antwoorden · Answers</h3><ol id="ansList"></ol><div style="text-align:center;margin-top:12px;"><button id="restart2" class="btn">Opnieuw spelen · Play again</button></div></div>';
+    const ol = document.getElementById('ansList');
+    QUESTIONS.forEach((q,i)=>{
+      const li = document.createElement('li');
+      li.style.margin = '10px 0';
+      li.innerHTML = '<strong>' + q.join(' ') + '</strong><div style="color:rgba(0,0,0,0.6);font-size:13px;margin-top:6px;">' + TRANSLATIONS[i] + '</div><div style="margin-top:6px;color:rgba(0,0,0,0.7);font-size:13px;"><strong>Regel / Rule:</strong><br>' + EXPLANATIONS[i].title + '</div>';
+      ol.appendChild(li);
+    });
+    document.getElementById('restart2').addEventListener('click', ()=>location.reload());
+  }
+
+  // translation toggle
+  transToggle.addEventListener('click', ()=>{
+    if(translationBox.style.display === 'none' || translationBox.style.display === ''){
+      translationBox.textContent = TRANSLATIONS[qIndex] || '';
+      translationBox.style.display = 'block';
+      transToggle.textContent = 'Verberg vertaling · Hide translation';
+    } else {
+      translationBox.style.display = 'none';
+      transToggle.textContent = 'Vertaling tonen · Show translation';
+    }
+  });
+
+  // keyboard modal: Enter triggers primary visible button
+  modal.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      const btn = modalActions.querySelector('button.btn');
+      if(btn) btn.click();
+    }
+  });
+
+  // initialize
+  start();
+})();
+</script>
+</body>
+</html>
