@@ -1,4 +1,4 @@
-// Original, classroom-style examples adapted to topics in Andy's own A1/A2 revision records.
+// Original Dutch revision questions for adult learners.
 const V = `
 hallo|こんにちは|Hallo, hoe gaat het?|挨拶|easy
 goedemorgen|おはようございます|Goedemorgen, mevrouw.|挨拶|easy
@@ -220,4 +220,4 @@ const READINGS=[
 ];
 READINGS.forEach(([title,level,passage,questions],pi)=>questions.forEach(([prompt,answer,b,c],qi)=>add({mode:'reading',level,topic:title,question:prompt,passage,passageTitle:title,speak:passage,options:shuffle([answer,b,c],pi*13+qi+2),answer,explanation:`本文の情報を確認しましょう。正解は「${answer}」。`,example:passage})));
 window.DUTCH_QUESTIONS=QUESTIONS;
-window.DUTCH_INFO={count:QUESTIONS.length,source:'Andy Chum Dutch Approach A1 revision workbook, private lessons notes, CNaVT A2 question patterns and vocabulary bank; all game prompts are original.'};
+window.DUTCH_INFO={count:QUESTIONS.length};
