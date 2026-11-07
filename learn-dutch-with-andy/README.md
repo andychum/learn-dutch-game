@@ -19,7 +19,7 @@ Open `index.html` in a browser, or serve the directory using a simple static ser
 
 ## Content and attribution
 
-Original practice questions are informed by Andy's own Dutch Approach A1 revision notes, private lesson revision materials and CNaVT A2 study topics. This is an independent learning resource and **not officially affiliated with or endorsed by CNaVT or Dutch Approach**. The question bank does not reproduce exam passages.
+The game contains original practice questions for adult Dutch learners.
 
 Browser pronunciation quality depends on the device's installed Dutch voice.
 
